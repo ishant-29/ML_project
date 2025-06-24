@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Clothing Size Predictor Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background Particles -->
+    <div class="particles-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <div class="tab-content active" id="predictor">
+                <div class="container">
+                    <!-- Floating Title -->
+                    <div class="floating-title">
+                        <div class="title-icon">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <h1>Smart Size Predictor</h1>
+                        <p>AI-powered perfect fit recommendations</p>
+                    </div>
+
+                    <form id="sizeForm" method="post" action="/predict">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="weight">
+                                    <i class="fas fa-weight"></i> Weight (kg)
+                                </label>
+                                <input type="number" id="weight" name="weight" step="0.1" min="30" max="200" required 
+                                       placeholder="Enter your weight">
+                                <div class="input-indicator"></div>
+                                <div class="input-helper">Typical range: 30-200 kg</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="height">
+                                    <i class="fas fa-ruler-vertical"></i> Height (cm)
+                                </label>
+                                <input type="number" id="height" name="height" step="0.1" min="120" max="220" required 
+                                       placeholder="Enter your height">
+                                <div class="input-indicator"></div>
+                                <div class="input-helper">Typical range: 120-220 cm</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="age">
+                                    <i class="fas fa-birthday-cake"></i> Age
+                                </label>
+                                <input type="number" id="age" name="age" min="10" max="100" required 
+                                       placeholder="Enter your age">
+                                <div class="input-indicator"></div>
+                                <div class="input-helper">Age range: 10-100 years</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="brand">
+                                    <i class="fas fa-tag"></i> Brand
+                                </label>
+                                <select id="brand" name="brand" required>
+                                    <option value="">Select a brand</option>
+                                    <option value="Adidas">🏃‍♂️ Adidas</option>
+                                    <option value="H&M">👕 H&M</option>
+                                    <option value="Nike">⚡ Nike</option>
+                                    <option value="Uniqlo">👔 Uniqlo</option>
+                                    <option value="Zara">🛍️ Zara</option>
+                                </select>
+                                <div class="brand-preview" id="brandPreview"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="item">
+                                    <i class="fas fa-tshirt"></i> Item Type
+                                </label>
+                                <select id="item" name="item" required>
+                                    <option value="">Select an item</option>
+                                    <option value="Dress">👗 Dress</option>
+                                    <option value="Jacket">🧥 Jacket</option>
+                                    <option value="Jeans">👖 Jeans</option>
+                                    <option value="Shirt">👔 Shirt</option>
+                                    <option value="T-Shirt">👕 T-Shirt</option>
+                                </select>
+                                <div class="item-preview" id="itemPreview"></div>
+                            </div>
+                        </div>
+
+                        <!-- Smart Progress Indicator -->
+                        <div class="smart-progress">
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                                <div class="progress-text" id="progressText">0% Complete</div>
+                            </div>
+                            <div class="progress-steps">
+                                <div class="step-indicator" data-step="1">
+                                    <i class="fas fa-user"></i>
+                                    <span>Personal Info</span>
+                                </div>
+                                <div class="step-indicator" data-step="2">
+                                    <i class="fas fa-tag"></i>
+                                    <span>Brand & Item</span>
+                                </div>
+                                <div class="step-indicator" data-step="3">
+                                    <i class="fas fa-magic"></i>
+                                    <span>Prediction</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <i class="fas fa-magic"></i> 
+                            <span class="btn-text">Predict My Size</span>
+                            <div class="btn-particles"></div>
+                        </button>
+                    </form>
+
+                    <div class="loading" id="loading">
+                        <div class="loading-container">
+                            <div class="spinner"></div>
+                            <p>Analyzing your measurements...</p>
+                            <div class="loading-steps">
+                                <div class="step active">Processing data</div>
+                                <div class="step">Running AI model</div>
+                                <div class="step">Generating recommendations</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if prediction_html %}
+                    <div class="result success">
+                        <div class="result-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="result-content">
+                            {{ prediction_html | safe }}
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn" onclick="window.location.reload()">
+                                <i class="fas fa-redo"></i> Try Again
+                            </button>
+                        </div>
+                    </div>
+                    {% elif prediction_text %}
+                    <div class="result {% if 'Error' in prediction_text %}error{% else %}success{% endif %}">
+                        <div class="result-icon">
+                            {% if 'Error' in prediction_text %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% else %}
+                                <i class="fas fa-check-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="result-content">
+                            {{ prediction_text }}
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn" onclick="window.location.reload()">
+                                <i class="fas fa-redo"></i> Try Again
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
